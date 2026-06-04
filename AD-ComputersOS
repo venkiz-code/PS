@@ -1,0 +1,24 @@
+Import-Module ActiveDirectory
+
+$ExportPath = "C:\Temp\AD_Computers.csv"
+
+Get-ADComputer -Filter * -Properties OperatingSystem,OperatingSystemVersion,DistinguishedName |
+Select-Object @{
+    Name = "ComputerName"
+    Expression = {$_.Name}
+}, @{
+    Name = "OSName"
+    Expression = {$_.OperatingSystem}
+}, @{
+    Name = "OSVersion"
+    Expression = {$_.OperatingSystemVersion}
+}, @{
+    Name = "OUPath"
+    Expression = {
+        ($_.DistinguishedName -replace '^CN=[^,]+,','')
+    }
+} |
+Sort-Object OUPath, ComputerName |
+Export-Csv -Path $ExportPath -NoTypeInformation -Encoding UTF8
+
+Write-Host "Export completed: $ExportPath"
